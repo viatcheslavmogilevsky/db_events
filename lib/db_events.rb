@@ -1,7 +1,7 @@
 require "db_events/version"
 
-require "activesupport"
-require "activerecord"
+require "active_support"
+require "active_record"
 
 require "db_events/changed_attributes_observer"
 
