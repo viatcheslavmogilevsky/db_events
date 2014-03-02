@@ -1,9 +1,10 @@
 require 'db_events/callback_distributor'
-require 'db_events/provider_observing'
+#require 'db_events/provider_observing'
 
 module DbEvents  
   class ClassProvider
     attr_reader :origin, :distributors, :direct_distributors, :inserted_distributors
+    alias :configuration :origin
 
     def initialize(origin, class_name)
       @origin, @class_name = origin, class_name
@@ -43,11 +44,19 @@ module DbEvents
       @class_name
     end
 
-    def observe(model, action_type)
-      observing = DbEvents::ProviderObserving.new(self)
-      observing.model, observing.action_type = model, action_type
-      observing.select_distributors!
-      observing.enqueue_worker
+    def observe(model, action_type=nil)
+      # observing = DbEvents::ProviderObserving.new(sel)
+      # observing.model, observing.action_type = model, action_type
+      # observing.select_distributors!
+      # observing.enqueue_worker
+
+      invoker = configuration.invoker_class.new
+      invoker.provider = self
+      invoker.distributors = @distributors.select do |d|
+        d.should_be_invoked?(model, action_type)
+      end
+      invoker.snapshot = model.dbe_snapshot.merge('action' => action_type)
+      invoker.invoke!
     end
   end
 end
