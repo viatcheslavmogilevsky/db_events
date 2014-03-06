@@ -1,9 +1,11 @@
 require 'db_events/class_provider'
 require 'db_events/invokers/inline'
+require 'db_events/queueing'
 #require 'db_events/'
 
 module DbEvents
   class Configuration
+    extend DbEvents::Queueing
     class << self
       attr_accessor :default_scope
       attr_writer :invoker_class

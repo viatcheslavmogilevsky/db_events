@@ -1,8 +1,10 @@
 require 'db_events/callback_distributor'
+require 'db_events/queueing'
 #require 'db_events/provider_observing'
 
 module DbEvents  
   class ClassProvider
+    include DbEvents::Queueing
     attr_reader :origin, :distributors, :direct_distributors, :inserted_distributors
     alias :configuration :origin
 

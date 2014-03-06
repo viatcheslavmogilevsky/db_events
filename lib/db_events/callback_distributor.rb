@@ -1,24 +1,30 @@
+require 'db_events/queueing'
+
 module DbEvents
   module Distributions
     module DirectDistribution
-      def invoke(instance_data, receivers=nil)
-        write_on_redis!(instance_data.merge({'class_name' => @class_name}), receivers)
+      def invoke(snapshot, receivers=nil)
+        run_performers self, snapshot, receivers
+        @provider.run_performers self, snapshot, receivers
+        @provider.configuration.run_performers self, snapshot, receivers
       end
 
-      def invoke_for_instance(model, action)
-        invoke({'id' => model.id, 'action' => action, 'info' => model.attributes})
+      def invoke_for_model(model, action)
+        invoke(model.db_snapshot.merge('action' => action))
       end
     end
 
     module InsertedDistribution
-      def invoke(instance_data)
-        info = instance_data['info']
-        receivers(info).each { |receiver| @parent_node.invoke_for_instance(receiver, 'update') }
+      def invoke(snapshot)
+        receivers(snapshot).each do |receiver|
+          @parent_node.invoke_for_model receiver, 'update'
+        end
       end
     end
   end
 
   class CallbackDistributor
+    include DbEvents::Queueing
     attr_accessor :render_options, :kind,
       :strategy, :class_name, :permission_class_name,
       :id, :parent_node, :template, :scopes

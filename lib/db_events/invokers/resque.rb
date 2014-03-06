@@ -25,7 +25,7 @@ module DbEvents
       def invoke!      
         Resque.enqueue_to(
           self.class.queue_name,
-          Worker, 
+          Worker,
           @provider.name, 
           @distributors.map(&:id).map(&:to_s), 
           @snapshot
