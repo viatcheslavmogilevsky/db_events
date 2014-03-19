@@ -47,11 +47,6 @@ module DbEvents
     end
 
     def observe(model, action_type=nil)
-      # observing = DbEvents::ProviderObserving.new(sel)
-      # observing.model, observing.action_type = model, action_type
-      # observing.select_distributors!
-      # observing.enqueue_worker
-
       invoker = configuration.invoker_class.new
       invoker.provider = self
       invoker.distributors = @distributors.select do |d|
